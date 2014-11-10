@@ -13,6 +13,9 @@ class Datastore:
         return False
     return True
     
-  
-  
-    
+  def get_all_users(self):
+    users = database.execute("SET SEARCH_PATH to lab5; SELECT username FROM user_acc").fetchall()
+    result = []
+    for user in users:  
+      result.append(user)
+    return result
