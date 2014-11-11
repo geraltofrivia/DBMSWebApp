@@ -65,6 +65,31 @@ html_contests = '''
 </html>
 '''
 
+html_pcontests = '''
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+    <style></style>
+  </head>
+  <body>
+    <h2> Programming Contests </h2> <br> <hr>
+    <p> Programming contests are designed to challenge your algorithm skills. Please choose any contest from the list below and get going. 
+    You may contact the mentors if you ever feel the need to. </p> <br>
+    <h4> Open Contests </h4>
+    <p> These contests have been declared open, but the activities haven't yet begun. Now would be a nice time to start </p>
+    <ul> %s </ul>
+    <br> <br>
+    <h4> Active Contests </h4>
+    <p> Although they have begun, they have not yet ended. Don't let doubt take the best of you. Start now!</p>
+    <ul> %s </ul>
+    </body>
+</html>
+'''    
+    
+
+
+
 @route('/register')
 @jinja2_view('register.html')
 def register():
@@ -107,7 +132,7 @@ def login_post():
         return login()
     if user_credential[0][1] == password:
         print "logging in %s" % username
-        response.set_cookie("username", "ratbumpy")
+        response.set_cookie("username", user_credential[0][0])
         return "YOU HAVE NOW SUCCESSFULLY LOGGED IN<br>Though as of now that doesn't grant you access to anything because we just haven't figured out a way to send cookies over this framework so, yeah. <sarcasm> Yay </sarcasm>"
     else:
         print "Incorrect credentials"
@@ -117,6 +142,16 @@ def login_post():
 def contests():
     return html_contests
 
+@route('/pcontests')
+def programming_contests():
+    cur.execute("SELECT * FROM programmingContest as PC, contests as C WHERE PC.contestid =  C.contestid AND C.state = 'open';")
+    open = cur.fetchall()
+    cur.execute("SELECT * FROM programmingContest as PC, contests as C WHERE PC.contestid =  C.contestid AND C.state = 'active';")
+    active = cur.fetchall()
+    html_open  = ''
+    for contest in open:
+        html_open += '<li>' + open[2]
+        rules = open[4].split('.')
 
 @route('/hello')
 def hello_again():
@@ -130,11 +165,17 @@ def hello_again():
 def logout():
     if request.get_cookie("username"):
         response.delete_cookie("username")
+        return 'Logged you out :) <br> Be back soon'
+    else:
+        return 'You are not logged in, in the first place'
 
 @route('/check_login')
 def is_loggedin():
     if request.get_cookie("username"):
         return request.get_cookie("username")
+    else:
+        return 'You are not logged in, in the first place'
+
 
 
 run(host='localhost', port=8081, debug=True)
